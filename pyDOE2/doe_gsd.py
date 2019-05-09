@@ -124,9 +124,13 @@ def gsd(levels, reduction, n=1):
     except AssertionError as e:
         raise ValueError(e)
 
+    #calc min int size required to capture levels - saves mem
+    int_type = 'uint'+str(min([i for i in [2**i for i in range(3,7)]
+                               if max(levels) <= 2**i]))
     partitions = _make_partitions(levels, reduction)
     latin_square = _make_latin_square(reduction)
-    ortogonal_arrays = _make_orthogonal_arrays(latin_square, len(levels))
+    ortogonal_arrays = _make_orthogonal_arrays(latin_square, len(levels),
+                                               int_type)
 
     try:
         designs = [_map_partitions_to_design(partitions, oa) - 1 for oa in
@@ -140,7 +144,7 @@ def gsd(levels, reduction, n=1):
         return designs[:n]
 
 
-def _make_orthogonal_arrays(latin_square, n_cols):
+def _make_orthogonal_arrays(latin_square, n_cols, int_type):
     """
     Augment latin-square to the specified number of columns to produce
     an orthogonal array.
@@ -148,7 +152,7 @@ def _make_orthogonal_arrays(latin_square, n_cols):
     p = len(latin_square)
 
     first_row = latin_square[0]
-    A_matrices = [np.array([[v]]) for v in first_row]
+    A_matrices = [np.array([[v]]).astype(int_type) for v in first_row]
 
     while A_matrices[0].shape[1] < n_cols:
         new_A_matrices = list()
